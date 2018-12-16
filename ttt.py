@@ -127,6 +127,9 @@ class Move:
             for y, score in enumerate(row):
                 if score >= high:
                     high = score
+        if high == 0:
+            print("Player '" + self.player.character + "' refuses to play")
+            exit(0)
         for x, row in enumerate(scores):
             for y, score in enumerate(row):
                 if score == high:
