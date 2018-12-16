@@ -22,7 +22,7 @@ class Player:
                     if (x + y) % 2 == 0:
                         if x == y:
                             self.score['d'][0] += 1
-                        if x + y == board.size:
+                        if x + y == (board.size - 1):
                             self.score['d'][1] += 1
 
     def make_move(self, game):
@@ -67,17 +67,97 @@ class Move:
             valid = self.validate(self.game.board)
         game.board.mark_field(self)
 
+    def find_winning_track(self, player):
+        for direction, scores in player.score.items():
+            for track, score in enumerate(scores):
+                if score == (self.game.board.size - 1):
+                    for contender in self.game.players:
+                        if contender.character != player.character:
+                            if contender.score[direction][track] == 0:
+                                return {direction: [track]}
+        return None
+
+    def find_lowest_scoring(self):
+        lowest = self.game.board.size - 1
+        tracks = {'h':[], 'v': [], 'd': []}
+        for player in self.game.players:
+            for direction, scores in player.score.items():
+                for track, score in enumerate(scores):
+                    if score <= lowest:
+                        lowest = score
+        for player in self.game.players:
+            for direction, scores in player.score.items():
+                for track, score in enumerate(scores):
+                    if score == lowest:
+                        if player.character != self.player.character:
+                            tracks[direction].append(track)
+        return tracks
+
+
+    def position_scores(self, tracks):
+        position_scores = []
+        for y in range(self.game.board.size):
+            row = []
+            for x in range(self.game.board.size):
+                row.append(0)
+            position_scores.append(row)
+        for y, row in enumerate(self.game.board.grid):
+            for x, field in enumerate(row):
+                if field == self.game.board.char:
+                    for direction, track in tracks.items():
+                        if direction == 'v':
+                            if x in tracks['v']:
+                                 position_scores[x][y] += 1
+                        if direction == 'h':
+                            if y in tracks['h']:
+                                position_scores[x][y] += 1
+                        if direction == 'd':
+                            if (x + y) % 2 == 0:
+                                if x == y:
+                                    if 0 in tracks['d']:
+                                        position_scores[x][y] += 1
+                                if x + y == (self.game.board.size - 1):
+                                    if 1 in tracks['d']:
+                                        position_scores[x][y] += 1
+        return position_scores
+
+    def best_position(self, scores):
+        high = 0
+        for x, row in enumerate(scores):
+            for y, score in enumerate(row):
+                if score >= high:
+                    high = score
+        for x, row in enumerate(scores):
+            for y, score in enumerate(row):
+                if score == high:
+                    self.x = x
+                    self.y = y
+                    break
+
     def generate(self):
-        print("Player " + self.player.character + " smokes dope")
+        # Priority - winning move
+        tracks = self.find_winning_track(self.player)
+        # Priority - prevent winning move
+        if tracks is None:
+            for player in self.game.players:
+                tracks = self.find_winning_track(player)
+                if tracks is not None:
+                    break
+        # Priority - lowest scoring tracks
+        if tracks is None:
+            tracks = self.find_lowest_scoring()
+        scores = self.position_scores(tracks)
+        self.best_position(scores)
+        game.board.mark_field(self)
 
     def validate(self, board):
-        if self.x < 0 or self.x > 2:
+        if self.x < 0 or self.x >= board.size:
             print("Invalid X")
             return False
-        if self.y < 0 or self.y > 2:
+        if self.y < 0 or self.y >= board.size:
             print("Invalid Y")
             return False
-        if board.grid[self.x][self.y] != board.char:
+        if board.grid[self.y][self.x] != board.char:
             print("Invalid position")
             return False
         return True
@@ -99,6 +179,7 @@ class Game:
                         break
 
 if __name__ == "__main__":
+    print("X - horizontal position, Y - vertical position, top left corner is postion X = 0, Y = 0.")
     turn = 0
     game = Game(
             players = [Player(character = '+'), Player(character = 'o', human = False)],
