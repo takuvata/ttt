@@ -52,6 +52,7 @@ class Board:
             for field in row:
                 print(field, end='')
             print()
+        print()
 
     def mark_field(self, move):
         self.grid[move.y][move.x] = move.player.character
@@ -169,10 +170,11 @@ class Move:
         return True
 
 class Game:
-    def __init__(self, board, players = [], winner = None):
+    def __init__(self, board, players = [], winner = None, turn = randint(0, 1)):
         self.players = players
         self.winner = winner
         self.board = board
+        self.turn = turn
 
     def get_winner(self, winning_score = 3):
         for player in self.players:
@@ -185,16 +187,15 @@ class Game:
                         break
 
 if __name__ == "__main__":
-    turn = randint(0, 1)
     game = Game(board = Board())
     game.players = [Player(game = game, character = '+'), Player(game = game, character = 'o', human = False)]
     game.board.display()
     print("X - horizontal position, Y - vertical position, top left corner is postion X = 0, Y = 0.")
 
 while game.winner is None:
-    game.players[turn % len(game.players)].make_move()
+    game.players[game.turn % len(game.players)].make_move()
     game.get_winner()
     game.board.display()
-    turn += 1
+    game.turn += 1
 
 print("Player '" + game.winner.character + "' wins!")
