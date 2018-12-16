@@ -35,6 +35,7 @@ class Player:
             move.read()
         else:
             move.generate()
+        self.game.turn += 1
 
 class Board:
     def __init__(self, size = 3, char = '#'):
@@ -196,6 +197,5 @@ while game.winner is None:
     game.players[game.turn % len(game.players)].make_move()
     game.get_winner()
     game.board.display()
-    game.turn += 1
 
 print("Player '" + game.winner.character + "' wins!")
