@@ -193,8 +193,8 @@ class Game:
                         break
 
     def play(self):
-        self.board.display()
         print("X - horizontal position, Y - vertical position, top left corner is postion X = 0, Y = 0.")
+        self.board.display()
         while self.winner is None:
             self.current_player = self.players[(self.starting_number + self.turn) % len(self.players)]
             self.current_player.make_move()
