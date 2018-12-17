@@ -171,9 +171,9 @@ class Move:
         return True
 
 class Game:
-    def __init__(self, starting_number = 0):
+    def __init__(self, board = Board(), starting_number = 0):
         self.winner = None
-        self.board = Board()
+        self.board = board
         self.turn = 0
         self.starting_number = starting_number
         self.players = [
