@@ -9,6 +9,7 @@ class Player:
         self.human = human
         self.score = {}
         self.reset_score()
+        self.move = Move(player = self)
 
     def reset_score(self):
         self.score = {'h': [], 'v': [], 'd': [0, 0]}
@@ -30,11 +31,10 @@ class Player:
                             self.score['d'][1] += 1
 
     def make_move(self):
-        move = Move(player = self)
         if self.human:
-            move.read()
+            self.move.read()
         else:
-            move.generate()
+            self.move.generate()
         self.game.turn += 1
 
 class Board:
@@ -70,7 +70,7 @@ class Move:
             self.x = int(input('X: '))
             self.y = int(input('Y: '))
             valid = self.validate(self.player.game.board)
-        game.board.mark_field(self)
+        self.player.game.board.mark_field(self)
 
     def find_winning_track(self, player):
         for direction, scores in player.score.items():
@@ -171,31 +171,40 @@ class Move:
         return True
 
 class Game:
-    def __init__(self, board, players = [], winner = None, turn = randint(0, 1)):
-        self.players = players
-        self.winner = winner
-        self.board = board
-        self.turn = turn
+    def __init__(self, starting_number = 0):
+        self.winner = None
+        self.board = Board()
+        self.turn = 0
+        self.starting_number = starting_number
+        self.players = [
+                Player(game = self, character = '+'),
+                Player(game = self, character = 'o', human = False)
+                ]
+        self.current_player = self.players[starting_number]
 
-    def get_winner(self, winning_score = 3):
+    def get_winner(self):
         for player in self.players:
             player.count_score()
         for player in self.players:
             for track, scores in player.score.items():
                 for score in scores:
-                    if score == winning_score:
+                    if score == self.board.size:
                         self.winner = player
                         break
 
+    def play(self):
+        self.board.display()
+        print("X - horizontal position, Y - vertical position, top left corner is postion X = 0, Y = 0.")
+        while self.winner is None:
+            self.current_player = self.players[(self.starting_number + self.turn) % len(self.players)]
+            self.current_player.make_move()
+            self.get_winner()
+            self.board.display()
+        print("Player '" + self.winner.character + "' wins!")
+
+
+
 if __name__ == "__main__":
-    game = Game(board = Board())
-    game.players = [Player(game = game, character = '+'), Player(game = game, character = 'o', human = False)]
-    game.board.display()
-    print("X - horizontal position, Y - vertical position, top left corner is postion X = 0, Y = 0.")
-
-while game.winner is None:
-    game.players[game.turn % len(game.players)].make_move()
-    game.get_winner()
-    game.board.display()
-
-print("Player '" + game.winner.character + "' wins!")
+    game = Game()
+    game.starting_number = randint(0, len(game.players))
+    game.play()
