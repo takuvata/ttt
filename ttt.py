@@ -177,7 +177,7 @@ class Game:
         self.turn = 0
         self.starting_number = starting_number
         self.players = [
-                Player(game = self, character = '+'),
+                Player(game = self, character = 'x'),
                 Player(game = self, character = 'o', human = False)
                 ]
         self.current_player = self.players[starting_number]
